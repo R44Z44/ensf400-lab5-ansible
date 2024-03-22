@@ -5,7 +5,6 @@ RUN apk --update --no-cache add openrc python && \
 
 ENTRYPOINT ["/sbin/init"]
 
-
 FROM alpine-systemd as alpine-sshd
 
 RUN apk update && \
@@ -13,6 +12,8 @@ RUN apk update && \
     deluser $(getent passwd 33 | cut -d: -f1) && \
     delgroup $(getent group 33 | cut -d: -f1) 2>/dev/null || true && \
     mkdir -p ~root/.ssh /etc/authorized_keys && chmod 700 ~root/.ssh/ && \
+    COPY ./secrets/id_rsa_app1.pub /root/.ssh/authorized_keys && \
+    RUN chmod 600 /root/.ssh/authorized_keys && \
     augtool 'set /files/etc/ssh/sshd_config/AuthorizedKeysFile ".ssh/authorized_keys /etc/authorized_keys/%u"' && \
     echo -e "Port 2223\n" >> /etc/ssh/sshd_config && \
     cp -a /etc/ssh /etc/ssh.cache && \
